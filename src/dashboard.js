@@ -1,5 +1,6 @@
-import "./style.css"
 
+import "./style.css"
+import QRCode from 'qrcode';
 
 // 1. Configuración de la API
 //const API_URL = import.meta.env.VITE_API_URL;
@@ -134,7 +135,8 @@ async function crearReserva(espacioId, espacioNombre) {
 
     // Gestionamos la respuesta del Backend
     if (response.ok) {
-      alert(`✅ ¡Reserva confirmada! ID de tu reserva: ${data.id}`);
+      //alert(`✅ ¡Reserva confirmada! ID de tu reserva: ${data.id}`);
+      generarTicketQR(data.id, espacioNombre, fecha, hora_inicio);
     } else if (response.status === 409) {
       alert(`❌ Conflictos: ${data.error}`); // Doble reserva
     } else {
@@ -144,6 +146,25 @@ async function crearReserva(espacioId, espacioNombre) {
   } catch (error) {
     alert('Error de conexión con el servidor');
   }
+}
+// 9. NUEVA FUNCIÓN: Generar el QR
+function generarTicketQR(reservaId, nombreEspacio, fecha, hora) {
+ const ticketContainer = document.getElementById('ticket-container');
+ const canvas = document.getElementById('qrCanvas');
+  // La URL que tendrá el QR. Apunta al endpoint de verificación del backend.
+ // Cuando el conserje lo escanee, su navegador irá a esta URL.Esta es la url que codifica el codigoqr
+ const urlVerificacion =`${API_URL}/reservas/verificar/${reservaId}`;
+
+ // Generar el QR en el canvas
+ QRCode.toCanvas(canvas, urlVerificacion, { width: 200 }, function (error) {
+   if (error) console.error(error);
+  
+   // Mostrar el ticket
+   ticketContainer.style.display = 'block';
+  
+   // Opcional: Scroll suave hacia el ticket
+   ticketContainer.scrollIntoView({ behavior: 'smooth' });
+ });
 }
 
 // 9. Cerrar Sesión
